@@ -1,0 +1,148 @@
+HTML Client control interface code
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Display Webcam Stream</title>
+<script type="text/javascript" src="{{ url_for('static', filename='jquery-
+3.7.0.min.js')}}"></script>
+<style>
+img {
+margin-bottom: 20px
+}
+#container {
+display: flex;
+align-items: center;
+justify-content: center;
+height: 100vh;
+flex-direction: column
+}
+body {
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+}
+#hrange input {
+width: 500px
+}
+#vrange input {
+width: 400px;
+-webkit-transform:rotate(90deg);
+-moz-transform:rotate(90deg);
+-o-transform:rotate(90deg);
+transform:rotate(270deg)
+}
+</style>
+</head>
+<body>
+<div id="container" class="center">
+<table>
+<tr align="center">
+<td>
+<h2 id="L1">Auto Mode Off</h2>
+<input type="checkbox" id="chk" /><label for="switch"></label>
+</td>
+</tr>
+<tr align="center">
+<td>
+<div>
+<img id="video" src="{{ url_for('video_feed') }}" class="center"
+border-radius="8px">
+</div>
+</td>
+<td>
+<div id="vrange">
+<p>
+<input type="range" id="tilt" name="tilt" list="Vmarkers" min="-60"
+max="60" onchange=submit(this.value,this.name)
+oninput="document.getElementById('Tangle').value=this.value;">
+<datalist id="Vmarkers">
+<option value="-60"></option>
+<option value="-40"></option>
+<option value="-20"></option>
+<option value="0"></option>
+<option value="20"></option>
+<option value="40"></option>
+<option value="60"></option>
+</datalist>
+<label for="tilt">Tilt Angle Degree = </label>
+<output id="Tangle">0</output>
+</p>
+</div>
+</td>
+</tr>
+<tr align="center">
+<td>
+<div id="hrange">
+<input type="range" id="pan" name="pan" list="markers"
+width="500px" min="-60" max="60" value="0"
+step="1" onchange=submit(this.value,this.name)
+oninput="document.getElementById('Pangle').value=this.value;">
+<datalist id="markers">
+<option value="-60"></option>
+<option value="-40"></option>
+<option value="-20"></option>
+<option value="0"></option>
+<option value="20"></option>
+<option value="40"></option>
+<option value="60"></option>
+</datalist><br>
+<label for="pan">Pan Angle Degree = </label>
+<output id="Pangle">0</output>
+</div>
+</td>
+<td>
+<div>
+<button id="reset-button">Reset</button>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<script>
+const horizontalSlider = document.getElementById('pan');
+const verticalSlider = document.getElementById('tilt');
+const resetButton = document.getElementById('reset-button');
+const outputP = document.getElementById('Pangle');
+const outputT = document.getElementById('Tangle');
+const chk = document.getElementById('chk');
+const videoImg = document.getElementById('video');
+const chkLabel = document.getElementById('L1');
+var H=0;
+var V=0
+function submit(d,p){
+if(p=="pan"){dif=d-H; H=d;}
+if(p=="tilt"){dif=d-V; V=d;}
+if(dif!=0){
+$.get("/",{"deg":dif, "pla":p})
+}
+}
+// Add event listener to the reset button
+resetButton.addEventListener('click', function() {
+// Reset the sliders to their initial values
+horizontalSlider.value = 0;
+verticalSlider.value = 0;
+submit(0,'pan');
+outputP.value = 0;
+submit(0,'tilt');
+outputT.value = 0;
+});
+chk.addEventListener('click', function() {
+// deactivate sliders
+const isChecked = chk.checked;
+horizontalSlider.disabled = isChecked;
+verticalSlider.disabled = isChecked;
+resetButton.disabled = isChecked;
+if(isChecked){
+chkLabel.innerHTML="Auto Mode On";
+videoImg.src = "{{ url_for('video_feed_auto') }}";
+}
+else{
+chkLabel.innerHTML="Auto Mode Off";
+videoImg.src = "{{ url_for('video_feed') }}";
+}
+});
+</script>
+</body>
+</html>
