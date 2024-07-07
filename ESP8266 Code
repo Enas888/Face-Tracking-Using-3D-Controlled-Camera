@@ -1,0 +1,49 @@
+//Appendix A: ESP8266 Code
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <Stepper.h>
+const char* ssid = "Alcatel AE";
+const char* password = "UAG.2023";
+ESP8266WebServer server(80);
+const int stepsPerRevolution = 2038; // Change this value as
+per motor
+// Creates an instance of stepper class
+// Pins entered in sequence IN1-IN3-IN2-IN4 for proper step
+sequence
+Stepper myStepperP = Stepper(stepsPerRevolution, 5, 0, 4,
+2);
+Stepper myStepperT = Stepper(stepsPerRevolution, 14, 13, 12,
+15);
+void handleRoot() {
+}
+void handleGetValues() {
+String pln = server.arg("value1");
+int steps = server.arg("value2").toInt();
+Serial.println("Plane: "+pln+" Degree: "+steps);
+// Move the motors
+if (pln == "pan"){
+myStepperP.step(steps);
+}
+if (pln == "tilt"){
+myStepperT.step(steps);
+}
+server.send(200, "text/plain", "Values received ");
+}
+void setup() {
+Serial.begin(115200);
+WiFi.begin(ssid, password);
+myStepperP.setSpeed(10); // Change this value as per your
+requirement
+myStepperT.setSpeed(10); // Change this value as per your
+requirement
+while (WiFi.status() != WL_CONNECTED) {
+delay(1000);
+}
+server.on("/", handleRoot);
+server.on("/getValues", handleGetValues);
+server.begin();
+Serial.println("Server Started...");
+}
+void loop() {
+server.handleClient();
